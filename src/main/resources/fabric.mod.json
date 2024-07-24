@@ -1,0 +1,41 @@
+{
+	"schemaVersion": 1,
+	"id": "balancedshield",
+	"version": "${version}",
+	"name": "Balanced Shield",
+	"description": "An attempt to fix unbalanced shields!",
+	"authors": [
+		"Happy1speed"
+	],
+	"contact": {
+		"homepage": "https://fabricmc.net/",
+		"sources": "https://github.com/FabricMC/fabric-example-mod"
+	},
+	"license": "MIT",
+	"icon": "assets/balancedshield/icon.png",
+	"environment": "*",
+	"accessWidener" : "balancedshield.accesswidener",
+	"entrypoints": {
+		"main": [
+          "net.happyspeed.balancedshield.BalancedShieldMod"
+		],
+		"client": [
+			"net.happyspeed.balancedshield.BalancedShieldModClient"
+		],
+		"fabric-datagen": [
+			"net.happyspeed.balancedshield.BalancedShieldModDataGenerator"
+		]
+	},
+	"mixins": [
+		"balancedshield.mixins.json"
+	],
+	"depends": {
+		"fabricloader": ">=0.15.8",
+		"minecraft": "~1.20.1",
+		"java": ">=17",
+		"fabric-api": "*"
+	},
+	"suggests": {
+		"another-mod": "*"
+	}
+}
