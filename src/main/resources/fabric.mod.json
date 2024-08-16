@@ -14,16 +14,9 @@
 	"license": "MIT",
 	"icon": "assets/balancedshield/icon.png",
 	"environment": "*",
-	"accessWidener" : "balancedshield.accesswidener",
 	"entrypoints": {
 		"main": [
           "net.happyspeed.balancedshield.BalancedShieldMod"
-		],
-		"client": [
-			"net.happyspeed.balancedshield.BalancedShieldModClient"
-		],
-		"fabric-datagen": [
-			"net.happyspeed.balancedshield.BalancedShieldModDataGenerator"
 		]
 	},
 	"mixins": [

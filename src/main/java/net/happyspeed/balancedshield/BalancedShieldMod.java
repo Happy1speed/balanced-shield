@@ -10,6 +10,6 @@ public class BalancedShieldMod implements ModInitializer {
 
 	@Override
 	public void onInitialize() {
-		LOGGER.info("Balanced Shield is now Loading");
+		LOGGER.info("Balanced Shield Initialized");
 	}
 }

@@ -1,6 +1,5 @@
 package net.happyspeed.balancedshield.mixin;
-import net.happyspeed.balancedshield.BalancedShieldMod;
-import net.happyspeed.balancedshield.access.MyClassAccess;
+import net.happyspeed.balancedshield.access.PlayerClassAccess;
 import net.happyspeed.balancedshield.util.ModTags;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityStatuses;
@@ -31,7 +30,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(PlayerEntity.class)
-abstract class PlayerEntityMixin extends LivingEntity implements MyClassAccess {
+abstract class PlayerEntityMixin extends LivingEntity implements PlayerClassAccess {
 
     @Shadow public abstract void disableShield(boolean sprinting);
 
@@ -79,7 +78,7 @@ abstract class PlayerEntityMixin extends LivingEntity implements MyClassAccess {
     @Unique
     private void calcShieldLogic(LivingEntity attacker, Integer shieldhitstrong, Integer shieldhitweak) {
         if (attacker instanceof PlayerEntity player) {
-            if (((MyClassAccess) player).balancedShield_1_20_1$accessPlayerPastCooldown() > 0.75f) {
+            if (((PlayerClassAccess) player).balancedShield_1_20_1$accessPlayerPastCooldown() > 0.75f) {
                 this.shieldTolerance -= shieldhitstrong;
             }
             else {
@@ -167,7 +166,6 @@ abstract class PlayerEntityMixin extends LivingEntity implements MyClassAccess {
                 this.shieldTolerance -= 4;
                 this.shieldIFrames = 4;
             }
-            BalancedShieldMod.LOGGER.info(String.valueOf(this.shieldTolerance));
         }
         if (this.shieldTolerance < 0) {
             this.shieldTolerance = 0;
