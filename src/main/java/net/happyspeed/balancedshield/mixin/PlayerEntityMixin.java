@@ -1,5 +1,7 @@
 package net.happyspeed.balancedshield.mixin;
+import net.happyspeed.balancedshield.BalancedShieldMod;
 import net.happyspeed.balancedshield.access.PlayerClassAccess;
+import net.happyspeed.balancedshield.config.ModConfigs;
 import net.happyspeed.balancedshield.util.ModTags;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityStatuses;
@@ -12,8 +14,10 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.item.ShieldItem;
 import net.minecraft.registry.tag.DamageTypeTags;
+import net.minecraft.registry.tag.EntityTypeTags;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
@@ -29,7 +33,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(PlayerEntity.class)
+@Mixin(value = PlayerEntity.class, priority = 900)
 abstract class PlayerEntityMixin extends LivingEntity implements PlayerClassAccess {
 
     @Shadow public abstract void disableShield(boolean sprinting);
@@ -123,6 +127,10 @@ abstract class PlayerEntityMixin extends LivingEntity implements PlayerClassAcce
 
     @Inject(method = "takeShieldHit", at = @At("HEAD"), cancellable = true)
     public void takeShieldHit(LivingEntity attacker, CallbackInfo ci) {
+        if (!(this.getActiveItem().isIn(ModTags.Items.SHIELD))) {
+            ci.cancel();
+            return;
+        }
         super.takeShieldHit(attacker);
         this.shieldRecharge = 160;
         if (this.shieldIFrames < 1) {
@@ -130,31 +138,31 @@ abstract class PlayerEntityMixin extends LivingEntity implements PlayerClassAcce
             if (this.getMaxShieldTolerance() < this.shieldTolerance) {
                 this.shieldTolerance = this.getMaxShieldTolerance();
             }
-            if (attacker.getMainHandStack().isIn(ModTags.Items.POWERFULLHIT)) {
+            if (attacker.getMainHandStack().isIn(ModTags.Items.POWERFULLHIT) || attacker.getType().isIn(ModTags.Entity.POWERFULLHITENTITY)) {
                 this.calcShieldLogic(attacker, maxShield, 2);
                 this.shieldIFrames = 4;
 
-            } else if (attacker.getMainHandStack().isIn(ModTags.Items.POWERSIXTEENHIT)) {
+            } else if (attacker.getMainHandStack().isIn(ModTags.Items.POWERSIXTEENHIT) || attacker.getType().isIn(ModTags.Entity.POWERSIXTEENHITENTITY)) {
                 this.calcShieldLogic(attacker, 16, 2);
                 this.shieldIFrames = 4;
 
-            } else if (attacker.getMainHandStack().isIn(ModTags.Items.POWERTWELVEHIT)) {
+            } else if (attacker.getMainHandStack().isIn(ModTags.Items.POWERTWELVEHIT) || attacker.getType().isIn(ModTags.Entity.POWERTWELVEHITENTITY)) {
                 this.calcShieldLogic(attacker, 12, 2);
                 this.shieldIFrames = 4;
 
-            } else if (attacker.getMainHandStack().isIn(ModTags.Items.POWERSIXHIT)) {
+            } else if (attacker.getMainHandStack().isIn(ModTags.Items.POWERSIXHIT) || attacker.getType().isIn(ModTags.Entity.POWERSIXHITENTITY)) {
                 this.calcShieldLogic(attacker, 6, 1);
                 this.shieldIFrames = 4;
 
-            } else if (attacker.getMainHandStack().isIn(ModTags.Items.POWERFOURHIT)) {
+            } else if (attacker.getMainHandStack().isIn(ModTags.Items.POWERFOURHIT) || attacker.getType().isIn(ModTags.Entity.POWERFOURHITENTITY)) {
                 this.calcShieldLogic(attacker, 4, 2);
                 this.shieldIFrames = 4;
 
-            } else if (attacker.getMainHandStack().isIn(ModTags.Items.POWERTHREEHIT)) {
+            } else if (attacker.getMainHandStack().isIn(ModTags.Items.POWERTHREEHIT) || attacker.getType().isIn(ModTags.Entity.POWERTHREEHITENTITY)) {
                 this.calcShieldLogic(attacker, 3, 1);
                 this.shieldIFrames = 4;
 
-            } else if (attacker.getMainHandStack().isIn(ModTags.Items.POWERTWOHIT)) {
+            } else if (attacker.getMainHandStack().isIn(ModTags.Items.POWERTWOHIT) || attacker.getType().isIn(ModTags.Entity.POWERTWOHITENTITY)) {
                 this.calcShieldLogic(attacker, 2, 1);
                 this.shieldIFrames = 4;
 
@@ -163,7 +171,7 @@ abstract class PlayerEntityMixin extends LivingEntity implements PlayerClassAcce
                 this.shieldIFrames = 4;
 
             } else {
-                this.shieldTolerance -= 4;
+                this.shieldTolerance -= ModConfigs.DEFAULTENTITYHITPOINTS;
                 this.shieldIFrames = 4;
             }
         }
@@ -262,27 +270,29 @@ abstract class PlayerEntityMixin extends LivingEntity implements PlayerClassAcce
                             this.shieldTolerance = this.getMaxShieldTolerance();
                         }
                         if (source.isIn(DamageTypeTags.IS_PROJECTILE)) {
-                            this.shieldTolerance -= 3;
+                            this.shieldTolerance -= ModConfigs.PROJECTILEHITPOINTS;
                             this.shieldRecharge = 160;
                             this.shieldIFrames = 4;
                         } else if (source.isOf(DamageTypes.FIREWORKS)) {
-                            this.shieldTolerance -= this.getMaxShieldTolerance();
+                            this.shieldTolerance -= ModConfigs.FIREWORKHITPOINTS;
                             this.shieldRecharge = 160;
                             this.shieldIFrames = 4;
                         } else if (source.isIn(DamageTypeTags.IS_EXPLOSION) && source.isIndirect()) {
-                            this.shieldTolerance -= 6;
+                            this.shieldTolerance -= ModConfigs.BLOCKEXPLOSIONHITPOINTS;
                             this.shieldRecharge = 160;
                             this.shieldIFrames = 4;
                         } else if (source.isOf(DamageTypes.INDIRECT_MAGIC)) {
-                            this.shieldTolerance -= this.getMaxShieldTolerance();
+                            this.shieldTolerance -= ModConfigs.INDIRECTMAGICHITPOINTS;
                             this.shieldRecharge = 160;
                             this.shieldIFrames = 4;
                         }
                         if (this.shieldTolerance < 0) {
                             this.shieldTolerance = 0;
                         }
+                        if (!(this.getActiveItem().isIn(ModTags.Items.SHIELD))) {
+                            return true;
+                        }
                         this.sendMessage(Text.literal("Shield: " + String.valueOf((int) (((double) this.shieldTolerance / getMaxShieldTolerance()) * 100)) + "%").formatted(Formatting.GOLD).formatted(Formatting.BOLD),true);
-                        updateDisableShieldCheck();
                     }
                     return true;
                 }

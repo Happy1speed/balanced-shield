@@ -1,12 +1,36 @@
 package net.happyspeed.balancedshield.util;
 
+import net.fabricmc.fabric.api.datagen.v1.provider.FabricTagProvider;
 import net.happyspeed.balancedshield.BalancedShieldMod;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
 import net.minecraft.item.Item;
 import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.tag.EntityTypeTags;
 import net.minecraft.registry.tag.TagKey;
 import net.minecraft.util.Identifier;
 
 public class ModTags {
+    public static class Entity {
+        public static final TagKey<EntityType<?>> POWERFULLHITENTITY =
+                createTag("power_full_hit_entity");
+        public static final TagKey<EntityType<?>> POWERSIXTEENHITENTITY =
+                createTag("power_sixteen_hit_entity");
+        public static final TagKey<EntityType<?>> POWERTWELVEHITENTITY =
+                createTag("power_twelve_hit_entity");
+        public static final TagKey<EntityType<?>> POWERSIXHITENTITY =
+                createTag("power_six_hit_entity");
+        public static final TagKey<EntityType<?>> POWERFOURHITENTITY =
+                createTag("power_four_hit_entity");
+        public static final TagKey<EntityType<?>> POWERTHREEHITENTITY =
+                createTag("power_three_hit_entity");
+        public static final TagKey<EntityType<?>> POWERTWOHITENTITY =
+                createTag("power_two_hit_entity");
+
+        private static TagKey<EntityType<?>> createTag(String name) {
+            return TagKey.of(RegistryKeys.ENTITY_TYPE, new Identifier(BalancedShieldMod.MOD_ID, name));
+        }
+    }
     public static class Items {
         public static final TagKey<Item> POWERFULLHIT =
                 createTag("power_full_hit");
