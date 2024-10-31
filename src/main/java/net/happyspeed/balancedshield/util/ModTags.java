@@ -69,6 +69,16 @@ public class ModTags {
                 createTag("tier_four_charges");
         public static final TagKey<Item> TIERFIVECHARGES =
                 createTag("tier_five_charges");
+        public static final TagKey<Item> TIERSIXCHARGES =
+                createTag("tier_six_charges");
+        public static final TagKey<Item> TIERSEVENCHARGES =
+                createTag("tier_seven_charges");
+        public static final TagKey<Item> TIEREIGHTCHARGES =
+                createTag("tier_eight_charges");
+        public static final TagKey<Item> TIERNINECHARGES =
+                createTag("tier_nine_charges");
+        public static final TagKey<Item> TIERTENCHARGES =
+                createTag("tier_ten_charges");
 
         private static TagKey<Item> createTag(String name) {
             return TagKey.of(RegistryKeys.ITEM, new Identifier(BalancedShieldMod.MOD_ID, name));

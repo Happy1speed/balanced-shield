@@ -19,6 +19,7 @@ import net.minecraft.item.ShieldItem;
 import net.minecraft.registry.tag.DamageTypeTags;
 import net.minecraft.registry.tag.EntityTypeTags;
 import net.minecraft.sound.SoundEvent;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
@@ -49,6 +50,12 @@ abstract class PlayerEntityMixin extends LivingEntity implements PlayerClassAcce
 
     @Unique
     private float playerPastAttackCooldown = 1.0f;
+
+    @Unique
+    public boolean wasBlockingFrameBefore = false;
+
+    @Unique
+    public int ticksSinceBlock = 0;
 
     @Shadow
     private final ItemCooldownManager itemCooldownManager;
@@ -121,17 +128,41 @@ abstract class PlayerEntityMixin extends LivingEntity implements PlayerClassAcce
         else if (shieldStack.isIn(ModTags.Items.TIERFIVECHARGES)) {
             return 20;
         }
+        else if (shieldStack.isIn(ModTags.Items.TIERSIXCHARGES)) {
+            return 24;
+        }
+        else if (shieldStack.isIn(ModTags.Items.TIERSEVENCHARGES)) {
+            return 28;
+        }
+        else if (shieldStack.isIn(ModTags.Items.TIEREIGHTCHARGES)) {
+            return 32;
+        }
+        else if (shieldStack.isIn(ModTags.Items.TIERNINECHARGES)) {
+            return 36;
+        }
+        else if (shieldStack.isIn(ModTags.Items.TIERTENCHARGES)) {
+            return 40;
+        }
         //Default to 12 if shield isn't in tags
         return 12;
     }
 
     @Inject(method = "takeShieldHit", at = @At("HEAD"), cancellable = true)
     public void takeShieldHit(LivingEntity attacker, CallbackInfo ci) {
+        super.takeShieldHit(attacker);
         if (!(this.getActiveItem().isIn(ModTags.Items.SHIELD))) {
             ci.cancel();
             return;
         }
-        super.takeShieldHit(attacker);
+        if (ModConfigs.BLOCKPARRYENABLED) {
+            if (this.getActiveItem().getMaxUseTime() - this.itemUseTimeLeft <= ModConfigs.BLOCKPARRYTICKWINDOW) {
+                if (!this.getWorld().isClient()) {
+                    this.getWorld().playSound(null, this.getX(), this.getY(), this.getZ(), SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, this.getSoundCategory(), (float) 0.5, 0.95f);
+                }
+                ci.cancel();
+                return;
+            }
+        }
         this.shieldRecharge = 160;
         if (this.shieldIFrames < 1) {
             int maxShield = this.getMaxShieldTolerance();
@@ -169,7 +200,6 @@ abstract class PlayerEntityMixin extends LivingEntity implements PlayerClassAcce
             } else if (attacker.isPlayer()) {
                 this.shieldTolerance--;
                 this.shieldIFrames = 4;
-
             } else {
                 this.shieldTolerance -= ModConfigs.DEFAULTENTITYHITPOINTS;
                 this.shieldIFrames = 4;
@@ -266,33 +296,40 @@ abstract class PlayerEntityMixin extends LivingEntity implements PlayerClassAcce
                 vec3d3 = new Vec3d(vec3d3.x, 0.0, vec3d3.z);
                 if (vec3d3.dotProduct(vec3d2) < 0.0) {
                     if (this.isPlayer() && this.shieldIFrames < 1) {
-                        if (this.getMaxShieldTolerance() < this.shieldTolerance) {
-                            this.shieldTolerance = this.getMaxShieldTolerance();
+                        if (!(this.getActiveItem().getMaxUseTime() - this.itemUseTimeLeft <= ModConfigs.BLOCKPARRYTICKWINDOW) || !ModConfigs.BLOCKPARRYENABLED) {
+                            if (this.getMaxShieldTolerance() < this.shieldTolerance) {
+                                this.shieldTolerance = this.getMaxShieldTolerance();
+                            }
+                            if (source.isIn(DamageTypeTags.IS_PROJECTILE)) {
+                                this.shieldTolerance -= ModConfigs.PROJECTILEHITPOINTS;
+                                this.shieldRecharge = 160;
+                                this.shieldIFrames = 4;
+                            } else if (source.isOf(DamageTypes.FIREWORKS)) {
+                                this.shieldTolerance -= ModConfigs.FIREWORKHITPOINTS;
+                                this.shieldRecharge = 160;
+                                this.shieldIFrames = 4;
+                            } else if (source.isIn(DamageTypeTags.IS_EXPLOSION) && source.isIndirect()) {
+                                this.shieldTolerance -= ModConfigs.BLOCKEXPLOSIONHITPOINTS;
+                                this.shieldRecharge = 160;
+                                this.shieldIFrames = 4;
+                            } else if (source.isOf(DamageTypes.INDIRECT_MAGIC)) {
+                                this.shieldTolerance -= ModConfigs.INDIRECTMAGICHITPOINTS;
+                                this.shieldRecharge = 160;
+                                this.shieldIFrames = 4;
+                            }
+                            if (this.shieldTolerance < 0) {
+                                this.shieldTolerance = 0;
+                            }
+                            if (!(this.getActiveItem().isIn(ModTags.Items.SHIELD))) {
+                                return true;
+                            }
+                            this.sendMessage(Text.literal("Shield: " + String.valueOf((int) (((double) this.shieldTolerance / getMaxShieldTolerance()) * 100)) + "%").formatted(Formatting.GOLD).formatted(Formatting.BOLD), true);
                         }
-                        if (source.isIn(DamageTypeTags.IS_PROJECTILE)) {
-                            this.shieldTolerance -= ModConfigs.PROJECTILEHITPOINTS;
-                            this.shieldRecharge = 160;
-                            this.shieldIFrames = 4;
-                        } else if (source.isOf(DamageTypes.FIREWORKS)) {
-                            this.shieldTolerance -= ModConfigs.FIREWORKHITPOINTS;
-                            this.shieldRecharge = 160;
-                            this.shieldIFrames = 4;
-                        } else if (source.isIn(DamageTypeTags.IS_EXPLOSION) && source.isIndirect()) {
-                            this.shieldTolerance -= ModConfigs.BLOCKEXPLOSIONHITPOINTS;
-                            this.shieldRecharge = 160;
-                            this.shieldIFrames = 4;
-                        } else if (source.isOf(DamageTypes.INDIRECT_MAGIC)) {
-                            this.shieldTolerance -= ModConfigs.INDIRECTMAGICHITPOINTS;
-                            this.shieldRecharge = 160;
-                            this.shieldIFrames = 4;
+                        if ((this.getActiveItem().getMaxUseTime() - this.itemUseTimeLeft <= ModConfigs.BLOCKPARRYTICKWINDOW) && ModConfigs.BLOCKPARRYENABLED) {
+                            if (!this.getWorld().isClient()) {
+                                this.getWorld().playSound(null, this.getX(), this.getY(), this.getZ(), SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, this.getSoundCategory(), (float) 0.5, 0.9f);
+                            }
                         }
-                        if (this.shieldTolerance < 0) {
-                            this.shieldTolerance = 0;
-                        }
-                        if (!(this.getActiveItem().isIn(ModTags.Items.SHIELD))) {
-                            return true;
-                        }
-                        this.sendMessage(Text.literal("Shield: " + String.valueOf((int) (((double) this.shieldTolerance / getMaxShieldTolerance()) * 100)) + "%").formatted(Formatting.GOLD).formatted(Formatting.BOLD),true);
                     }
                     return true;
                 }

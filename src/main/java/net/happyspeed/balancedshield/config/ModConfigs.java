@@ -12,6 +12,8 @@ public class ModConfigs {
     public static int BLOCKEXPLOSIONHITPOINTS;
     public static int INDIRECTMAGICHITPOINTS;
     public static int DEFAULTENTITYHITPOINTS;
+    public static boolean BLOCKPARRYENABLED;
+    public static int BLOCKPARRYTICKWINDOW;
 
     public static void registerConfigs() {
         configs = new ModConfigProvider();
@@ -27,7 +29,8 @@ public class ModConfigs {
         configs.addKeyValuePair(new Pair<>("firework_hit_points", 12));
         configs.addKeyValuePair(new Pair<>("block_explosion_hit_points", 6));
         configs.addKeyValuePair(new Pair<>("indirect_magic_hit_points", 12));
-        configs.addKeyValuePair(new Pair<>("default_entity_hit_points", 4));
+        configs.addKeyValuePair(new Pair<>("block_parry_enabled", false));
+        configs.addKeyValuePair(new Pair<>("block_parry_tick_window", 3));
     }
 
     private static void assignConfigs() {
@@ -36,6 +39,8 @@ public class ModConfigs {
         BLOCKEXPLOSIONHITPOINTS = CONFIG.getOrDefault("block_explosion_hit_points", 6);
         INDIRECTMAGICHITPOINTS = CONFIG.getOrDefault("indirect_magic_hit_points", 12);
         DEFAULTENTITYHITPOINTS = CONFIG.getOrDefault("default_entity_hit_points", 4);
+        BLOCKPARRYENABLED = CONFIG.getOrDefault("block_parry_enabled", false);
+        BLOCKPARRYTICKWINDOW = CONFIG.getOrDefault("block_parry_tick_window", 3);
 
 
 
