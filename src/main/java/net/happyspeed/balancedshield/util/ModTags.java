@@ -80,6 +80,47 @@ public class ModTags {
         public static final TagKey<Item> TIERTENCHARGES =
                 createTag("tier_ten_charges");
 
+        public static final TagKey<Item> SHIELDMOVEMENTONE =
+                createTag("shield_movement_one");
+        public static final TagKey<Item> SHIELDMOVEMENTTWO =
+                createTag("shield_movement_two");
+        public static final TagKey<Item> SHIELDMOVEMENTTHREE =
+                createTag("shield_movement_three");
+        public static final TagKey<Item> SHIELDMOVEMENTFOUR =
+                createTag("shield_movement_four");
+        public static final TagKey<Item> SHIELDMOVEMENTFIVE =
+                createTag("shield_movement_five");
+        public static final TagKey<Item> SHIELDMOVEMENTSIX =
+                createTag("shield_movement_six");
+        public static final TagKey<Item> SHIELDMOVEMENTSEVEN =
+                createTag("shield_movement_seven");
+        public static final TagKey<Item> SHIELDMOVEMENTEIGHT =
+                createTag("shield_movement_eight");
+        public static final TagKey<Item> SHIELDMOVEMENTNINE =
+                createTag("shield_movement_nine");
+
+        public static final TagKey<Item> SHIELDSTRAFEMOVEMENTONE =
+                createTag("shield_strafe_movement_one");
+        public static final TagKey<Item> SHIELDSTRAFEMOVEMENTTWO =
+                createTag("shield_strafe_movement_two");
+        public static final TagKey<Item> SHIELDSTRAFEMOVEMENTTHREE =
+                createTag("shield_strafe_movement_three");
+        public static final TagKey<Item> SHIELDSTRAFEMOVEMENTFOUR =
+                createTag("shield_strafe_movement_four");
+        public static final TagKey<Item> SHIELDSTRAFEMOVEMENTFIVE =
+                createTag("shield_strafe_movement_five");
+        public static final TagKey<Item> SHIELDSTRAFEMOVEMENTSIX =
+                createTag("shield_strafe_movement_six");
+        public static final TagKey<Item> SHIELDSTRAFEMOVEMENTSEVEN =
+                createTag("shield_strafe_movement_seven");
+        public static final TagKey<Item> SHIELDSTRAFEMOVEMENTEIGHT =
+                createTag("shield_strafe_movement_eight");
+        public static final TagKey<Item> SHIELDSTRAFEMOVEMENTNINE =
+                createTag("shield_strafe_movement_nine");
+
+        public static final TagKey<Item> SHIELDSPRINT =
+                createTag("shield_sprint");
+
         private static TagKey<Item> createTag(String name) {
             return TagKey.of(RegistryKeys.ITEM, new Identifier(BalancedShieldMod.MOD_ID, name));
         }

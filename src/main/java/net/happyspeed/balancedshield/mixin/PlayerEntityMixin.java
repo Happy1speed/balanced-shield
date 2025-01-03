@@ -237,6 +237,7 @@ abstract class PlayerEntityMixin extends LivingEntity implements PlayerClassAcce
 
             //Set Cooldown
             if (c != -1) {
+                this.getItemCooldownManager().remove(inventory.getStack(i).getItem());
                 this.getItemCooldownManager().set(inventory.getStack(i).getItem(), c);
             }
         }
