@@ -17,6 +17,9 @@
 	"entrypoints": {
 		"main": [
           "net.happyspeed.balancedshield.BalancedShieldMod"
+		],
+		"client": [
+		  "net.happyspeed.balancedshield.BalancedShieldModClient"
 		]
 	},
 	"mixins": [

@@ -2,6 +2,7 @@ package net.happyspeed.balancedshield.mixin;
 import net.happyspeed.balancedshield.BalancedShieldMod;
 import net.happyspeed.balancedshield.access.PlayerClassAccess;
 import net.happyspeed.balancedshield.config.ModConfigs;
+import net.happyspeed.balancedshield.network.S2CShieldToleranceSyncPacket;
 import net.happyspeed.balancedshield.util.ModTags;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityStatuses;
@@ -18,6 +19,8 @@ import net.minecraft.item.Items;
 import net.minecraft.item.ShieldItem;
 import net.minecraft.registry.tag.DamageTypeTags;
 import net.minecraft.registry.tag.EntityTypeTags;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
@@ -56,6 +59,9 @@ abstract class PlayerEntityMixin extends LivingEntity implements PlayerClassAcce
 
     @Unique
     public int ticksSinceBlock = 0;
+
+    @Unique
+    int pastShieldTolerance = shieldTolerance;
 
     @Shadow
     private final ItemCooldownManager itemCooldownManager;
@@ -208,7 +214,13 @@ abstract class PlayerEntityMixin extends LivingEntity implements PlayerClassAcce
         if (this.shieldTolerance < 0) {
             this.shieldTolerance = 0;
         }
-        this.sendMessage(Text.literal("Shield: " + String.valueOf((int) (((double) this.shieldTolerance / getMaxShieldTolerance()) * 100)) + "%").formatted(Formatting.GOLD).formatted(Formatting.BOLD),true);
+        if (!this.getWorld().isClient()) {
+            var player = ((PlayerEntity) ((Object) this));
+            if (player instanceof ServerPlayerEntity serverPlayerEntity) {
+                S2CShieldToleranceSyncPacket.send(serverPlayerEntity, this.getId(), (float) shieldTolerance);
+            }
+        }
+        //this.sendMessage(Text.literal("Shield: " + String.valueOf((int) (((double) this.shieldTolerance / getMaxShieldTolerance()) * 100)) + "%").formatted(Formatting.GOLD).formatted(Formatting.BOLD),true);
         updateDisableShieldCheck();
         ci.cancel();
     }
@@ -262,6 +274,14 @@ abstract class PlayerEntityMixin extends LivingEntity implements PlayerClassAcce
 
     @Inject(method = "tick", at = @At("HEAD"), cancellable = true)
     public void tick(CallbackInfo ci) {
+        if (!this.getWorld().isClient()) {
+            if (!this.getWorld().isClient()) {
+                var player = ((PlayerEntity) ((Object) this));
+                if (player instanceof ServerPlayerEntity serverPlayerEntity) {
+                    S2CShieldToleranceSyncPacket.send(serverPlayerEntity, this.getId(), (float) shieldTolerance);
+                }
+            }
+        }
         if (this.shieldRecharge < 1) {
             this.shieldTolerance = this.getMaxShieldTolerance();
         }
@@ -273,6 +293,7 @@ abstract class PlayerEntityMixin extends LivingEntity implements PlayerClassAcce
             this.shieldIFrames--;
         }
     }
+
     @Inject(method = "attack", at = @At("HEAD"), cancellable = true)
     public void attackInject(CallbackInfo ci) {
         this.playerPastAttackCooldown = this.getAttackCooldownProgress(1.0f);
@@ -324,7 +345,13 @@ abstract class PlayerEntityMixin extends LivingEntity implements PlayerClassAcce
                             if (!(this.getActiveItem().isIn(ModTags.Items.SHIELD))) {
                                 return true;
                             }
-                            this.sendMessage(Text.literal("Shield: " + String.valueOf((int) (((double) this.shieldTolerance / getMaxShieldTolerance()) * 100)) + "%").formatted(Formatting.GOLD).formatted(Formatting.BOLD), true);
+                            if (!this.getWorld().isClient()) {
+                                var player = ((PlayerEntity) ((Object) this));
+                                if (player instanceof ServerPlayerEntity serverPlayerEntity) {
+                                    S2CShieldToleranceSyncPacket.send(serverPlayerEntity, this.getId(), (float) shieldTolerance);
+                                }
+                            }
+                            //this.sendMessage(Text.literal("Shield: " + String.valueOf((int) (((double) this.shieldTolerance / getMaxShieldTolerance()) * 100)) + "%").formatted(Formatting.GOLD).formatted(Formatting.BOLD), true);
                         }
                         if ((this.getActiveItem().getMaxUseTime() - this.itemUseTimeLeft <= ModConfigs.BLOCKPARRYTICKWINDOW) && ModConfigs.BLOCKPARRYENABLED) {
                             if (!this.getWorld().isClient()) {
