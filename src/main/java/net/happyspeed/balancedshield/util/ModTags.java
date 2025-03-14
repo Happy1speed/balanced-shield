@@ -118,6 +118,27 @@ public class ModTags {
         public static final TagKey<Item> SHIELDSTRAFEMOVEMENTNINE =
                 createTag("shield_strafe_movement_nine");
 
+        public static final TagKey<Item> SHIELDRECHARGETIMEONE =
+                createTag("shield_recharge_time_one");
+        public static final TagKey<Item> SHIELDRECHARGETIMETWO =
+                createTag("shield_recharge_time_two");
+        public static final TagKey<Item> SHIELDRECHARGETIMETHREE =
+                createTag("shield_recharge_time_three");
+        public static final TagKey<Item> SHIELDRECHARGETIMEFOUR =
+                createTag("shield_recharge_time_four");
+        public static final TagKey<Item> SHIELDRECHARGETIMEFIVE =
+                createTag("shield_recharge_time_five");
+        public static final TagKey<Item> SHIELDRECHARGETIMESIX =
+                createTag("shield_recharge_time_six");
+        public static final TagKey<Item> SHIELDRECHARGETIMESEVEN =
+                createTag("shield_recharge_time_seven");
+        public static final TagKey<Item> SHIELDRECHARGETIMEEIGHT =
+                createTag("shield_recharge_time_eight");
+        public static final TagKey<Item> SHIELDRECHARGETIMENINE =
+                createTag("shield_recharge_time_nine");
+        public static final TagKey<Item> SHIELDRECHARGETIMETEN =
+                createTag("shield_recharge_time_ten");
+
         public static final TagKey<Item> SHIELDSPRINT =
                 createTag("shield_sprint");
 

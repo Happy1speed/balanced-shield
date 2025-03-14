@@ -10,12 +10,18 @@ import net.happyspeed.balancedshield.access.ClientPlayerClassAccess;
 import net.happyspeed.balancedshield.config.ModConfigs;
 import net.happyspeed.balancedshield.util.ModTags;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.font.Font;
+import net.minecraft.client.font.FontStorage;
+import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.util.Window;
 import net.minecraft.entity.player.ItemCooldownManager;
 import net.minecraft.item.ShieldItem;
 import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.ColorHelper;
+import net.minecraft.util.math.MathHelper;
+import org.intellij.lang.annotations.JdkConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,32 +64,43 @@ public class BalancedShieldMod implements ModInitializer {
 				ItemCooldownManager cooldownManager = mc.player.getItemCooldownManager();
 				if (mc.player.getOffHandStack().isIn(ModTags.Items.SHIELD) || mc.player.getOffHandStack().getItem() instanceof ShieldItem || mc.player.getMainHandStack().isIn(ModTags.Items.SHIELD) || mc.player.getMainHandStack().getItem() instanceof ShieldItem) {
 					if (mc.player.getStackInHand(mc.player.getActiveHand()).isIn(ModTags.Items.SHIELD) || mc.player.getStackInHand(mc.player.getActiveHand()).getItem() instanceof ShieldItem) {
-						int Orange = ColorHelper.Argb.getArgb(240, 222, 123, 42);
-						int Green = ColorHelper.Argb.getArgb(220, 10, 193, 4);
+						int Orange = ColorHelper.Argb.getArgb(220, 210, 123, 42);
+						int Red = ColorHelper.Argb.getArgb(240, 240, 59, 5);
+						int Green = ColorHelper.Argb.getArgb(180, 10, 193, 4);
 						int Gray = ColorHelper.Argb.getArgb(200, 137, 135, 135);
 
 
 						int barX1 = (int) (((window.getScaledWidth() * 0.5f) - (((ClientPlayerClassAccess) mc.player).balanced_shield$getMaxShieldToleranceClient() * 0.5) * window.getScaleFactor()));
-						int barY1 = (int) (window.getScaledHeight() * 0.5f + (9 * window.getScaleFactor()));
-						int barX2 = (int) (barX1 + (((ClientPlayerClassAccess) mc.player).balanced_shield$getClientShieldTolerance()) * window.getScaleFactor());
-						int barY2 = (int) ((window.getScaledHeight() * 0.5f) + (12 * window.getScaleFactor()));
+						int barY1 = (int) (window.getScaledHeight() * 0.5f + ((2 * window.getScaleFactor()) + 10));
+						int barX2 = (int) (barX1 + ((ClientPlayerClassAccess) mc.player).balanced_shield$getClientShieldTolerance() * window.getScaleFactor());
+						int barY2 = (int) ((window.getScaledHeight() * 0.5f) + ((7 * window.getScaleFactor()) + 10));
 
 						int barBGX1 = (int) (((window.getScaledWidth() * 0.5f) - (((ClientPlayerClassAccess) mc.player).balanced_shield$getMaxShieldToleranceClient() * 0.5) * window.getScaleFactor()));
-						int barBGY1 = (int) (window.getScaledHeight() * 0.5f + (9 * window.getScaleFactor()));
-						int barBGX2 = (int) (barBGX1 + (((ClientPlayerClassAccess) mc.player).balanced_shield$getMaxShieldToleranceClient()) * window.getScaleFactor());
-						int barBGY2 = (int) ((window.getScaledHeight() * 0.5f) + (12 * window.getScaleFactor()));
+						int barBGY1 = (int) (window.getScaledHeight() * 0.5f + ((2 * window.getScaleFactor()) + 10));
+						int barBGX2 = (int) (barBGX1 + ((ClientPlayerClassAccess) mc.player).balanced_shield$getMaxShieldToleranceClient() * window.getScaleFactor());
+						int barBGY2 = (int) ((window.getScaledHeight() * 0.5f) + ((7 * window.getScaleFactor()) + 10));
+
 
 						if (!(cooldownManager.getCooldownProgress(mc.player.getStackInHand(mc.player.getActiveHand()).getItem(), tickDelta) == 0)) {
-							context.fill(barBGX1, barBGY1, barBGX2, barBGY2, 1, Orange);
+
+							float lerpedAmount = MathHelper.abs(MathHelper.sin(mc.player.age / 10F));
+							int lerpedColor = ColorHelper.Argb.lerp(lerpedAmount, Red, Orange);
+							context.fill(barBGX1, barBGY1, barBGX2, barBGY2, 2, lerpedColor);
+
+							if (ModConfigs.CLIENTSHOWWORDINFO) {
+								context.drawCenteredTextWithShadow(MinecraftClient.getInstance().textRenderer, Text.translatable("text.balancedshield.info_disabled"), (int) (window.getScaledWidth() * 0.5f), (int) (barBGY2 + (3 * window.getScaleFactor())), ColorHelper.Argb.getArgb(160, 200, 200, 200));
+							}
 						}
-						else if (((ClientPlayerClassAccess) mc.player).balanced_shield$getClientShieldTolerance() < ((ClientPlayerClassAccess) mc.player).balanced_shield$getMaxShieldToleranceClient()) {
+						else if (((ClientPlayerClassAccess) mc.player).balanced_shield$getClientShieldTolerance() < ((ClientPlayerClassAccess) mc.player).balanced_shield$getMaxShieldToleranceClient() || mc.player.isBlocking()) {
 							if (mc.player.getStackInHand(mc.player.getActiveHand()).isIn(ModTags.Items.SHIELD) || mc.player.getStackInHand(mc.player.getActiveHand()).getItem() instanceof ShieldItem) {
-								context.fill(barX1, barY1, barX2, barY2, 1, Green);
-								context.fill(barBGX1, barBGY1, barBGX2, barBGY2, 0, Gray);
+								context.fill(barX1, barY1, barX2, barY2, 2, Green);
+								context.fill(barBGX1, barBGY1, barBGX2, barBGY2, 1, Gray);
+								if (ModConfigs.CLIENTSHOWWORDINFO) {
+									context.drawCenteredTextWithShadow(MinecraftClient.getInstance().textRenderer, Text.literal("Shield: " + (int) (((double) (((ClientPlayerClassAccess) mc.player).balanced_shield$getClientShieldTolerance()) / (((ClientPlayerClassAccess) mc.player).balanced_shield$getMaxShieldToleranceClient())) * 100) + "%"), (int) (window.getScaledWidth() * 0.5f), (int) (barBGY2 + (3 * window.getScaleFactor())), ColorHelper.Argb.getArgb(160, 200, 200, 200));
+								}
 							}
 						}
 
-						//Plan: S2C packet with tolerance, duck interface for client player, get variable from cast and draw here, server sends packet variable update (copy var declared at start of tick loop, checks if same at end of loop)
 					}
 				}
 			}

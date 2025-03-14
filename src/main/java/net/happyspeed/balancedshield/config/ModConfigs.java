@@ -14,6 +14,8 @@ public class ModConfigs {
     public static int DEFAULTENTITYHITPOINTS;
     public static boolean BLOCKPARRYENABLED;
     public static int BLOCKPARRYTICKWINDOW;
+    public static int R;
+    public static boolean CLIENTSHOWWORDINFO;
 
     public static void registerConfigs() {
         configs = new ModConfigProvider();
@@ -31,6 +33,7 @@ public class ModConfigs {
         configs.addKeyValuePair(new Pair<>("indirect_magic_hit_points", 12));
         configs.addKeyValuePair(new Pair<>("block_parry_enabled", false));
         configs.addKeyValuePair(new Pair<>("block_parry_tick_window", 3));
+        configs.addKeyValuePair(new Pair<>("client_show_word_info", true));
     }
 
     private static void assignConfigs() {
@@ -41,6 +44,7 @@ public class ModConfigs {
         DEFAULTENTITYHITPOINTS = CONFIG.getOrDefault("default_entity_hit_points", 4);
         BLOCKPARRYENABLED = CONFIG.getOrDefault("block_parry_enabled", false);
         BLOCKPARRYTICKWINDOW = CONFIG.getOrDefault("block_parry_tick_window", 3);
+        CLIENTSHOWWORDINFO = CONFIG.getOrDefault("client_show_word_info", true);
 
 
 

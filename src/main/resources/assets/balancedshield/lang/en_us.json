@@ -1,4 +1,5 @@
 {
   "pack.balancedshieldguardingcompat": "Balanced Shield Guarding Compat",
-  "pack.balancedshieldbumblezonecompat": "Balanced Shield Bumblezone Compat"
+  "pack.balancedshieldbumblezonecompat": "Balanced Shield Bumblezone Compat",
+  "text.balancedshield.info_disabled": "Disabled"
 }

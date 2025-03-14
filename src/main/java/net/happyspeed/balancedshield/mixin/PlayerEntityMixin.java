@@ -46,7 +46,7 @@ abstract class PlayerEntityMixin extends LivingEntity implements PlayerClassAcce
     public int shieldTolerance = 12;
 
     @Unique
-    public int shieldRecharge = 100;
+    public int shieldRecharge = 160;
 
     @Unique
     public int shieldIFrames = 0;
@@ -62,6 +62,10 @@ abstract class PlayerEntityMixin extends LivingEntity implements PlayerClassAcce
 
     @Unique
     int pastShieldTolerance = shieldTolerance;
+
+    @Unique
+    int pastMaxShieldTolerance = shieldTolerance;
+
 
     @Shadow
     private final ItemCooldownManager itemCooldownManager;
@@ -153,6 +157,51 @@ abstract class PlayerEntityMixin extends LivingEntity implements PlayerClassAcce
         return 12;
     }
 
+    @Unique
+    private int calcShieldRechargeTime() {
+        Hand holdingHand = this.getActiveHand();
+        ItemStack shieldStack = inventory.getMainHandStack();
+        if (holdingHand == Hand.MAIN_HAND) {
+            shieldStack = inventory.getMainHandStack();
+        }
+        if (holdingHand == Hand.OFF_HAND) {
+            shieldStack = inventory.getStack(PlayerInventory.OFF_HAND_SLOT);
+        }
+        //Tiers
+        if (shieldStack.isIn(ModTags.Items.SHIELDRECHARGETIMEONE)) {
+            return 500;
+        }
+        else if (shieldStack.isIn(ModTags.Items.SHIELDRECHARGETIMETWO)) {
+            return 450;
+        }
+        else if (shieldStack.isIn(ModTags.Items.SHIELDRECHARGETIMETHREE)) {
+            return 400;
+        }
+        else if (shieldStack.isIn(ModTags.Items.SHIELDRECHARGETIMEFOUR)) {
+            return 350;
+        }
+        else if (shieldStack.isIn(ModTags.Items.SHIELDRECHARGETIMEFIVE)) {
+            return 300;
+        }
+        else if (shieldStack.isIn(ModTags.Items.SHIELDRECHARGETIMESIX)) {
+            return 250;
+        }
+        else if (shieldStack.isIn(ModTags.Items.SHIELDRECHARGETIMESEVEN)) {
+            return 200;
+        }
+        else if (shieldStack.isIn(ModTags.Items.SHIELDRECHARGETIMEEIGHT)) {
+            return 150;
+        }
+        else if (shieldStack.isIn(ModTags.Items.SHIELDRECHARGETIMENINE)) {
+            return 100;
+        }
+        else if (shieldStack.isIn(ModTags.Items.SHIELDRECHARGETIMETEN)) {
+            return 50;
+        }
+        //Default to 200 if shield isn't in tags
+        return 200;
+    }
+
     @Inject(method = "takeShieldHit", at = @At("HEAD"), cancellable = true)
     public void takeShieldHit(LivingEntity attacker, CallbackInfo ci) {
         super.takeShieldHit(attacker);
@@ -169,7 +218,8 @@ abstract class PlayerEntityMixin extends LivingEntity implements PlayerClassAcce
                 return;
             }
         }
-        this.shieldRecharge = 160;
+
+        this.shieldRecharge = calcShieldRechargeTime();
         if (this.shieldIFrames < 1) {
             int maxShield = this.getMaxShieldTolerance();
             if (this.getMaxShieldTolerance() < this.shieldTolerance) {
@@ -261,6 +311,12 @@ abstract class PlayerEntityMixin extends LivingEntity implements PlayerClassAcce
         if (this.shieldTolerance < 1) {
             this.disableShield(true);
             this.shieldTolerance = this.getMaxShieldTolerance();
+            if (!this.getWorld().isClient()) {
+                var player = ((PlayerEntity) ((Object) this));
+                if (player instanceof ServerPlayerEntity serverPlayerEntity) {
+                    S2CShieldToleranceSyncPacket.send(serverPlayerEntity, this.getId(), (float) shieldTolerance);
+                }
+            }
         }
     }
 
@@ -269,21 +325,28 @@ abstract class PlayerEntityMixin extends LivingEntity implements PlayerClassAcce
         calcDisableTime();
         this.clearActiveItem();
         this.getWorld().sendEntityStatus(this, EntityStatuses.BREAK_SHIELD);
+        if (!this.getWorld().isClient()) {
+            var player = ((PlayerEntity) ((Object) this));
+            if (player instanceof ServerPlayerEntity serverPlayerEntity) {
+                S2CShieldToleranceSyncPacket.send(serverPlayerEntity, this.getId(), (float) shieldTolerance);
+            }
+        }
         ci.cancel();
     }
 
     @Inject(method = "tick", at = @At("HEAD"), cancellable = true)
     public void tick(CallbackInfo ci) {
-        if (!this.getWorld().isClient()) {
+
+
+
+        if (this.shieldRecharge < 1) {
+            this.shieldTolerance = this.getMaxShieldTolerance();
             if (!this.getWorld().isClient()) {
                 var player = ((PlayerEntity) ((Object) this));
                 if (player instanceof ServerPlayerEntity serverPlayerEntity) {
                     S2CShieldToleranceSyncPacket.send(serverPlayerEntity, this.getId(), (float) shieldTolerance);
                 }
             }
-        }
-        if (this.shieldRecharge < 1) {
-            this.shieldTolerance = this.getMaxShieldTolerance();
         }
         else {
             this.shieldRecharge --;
@@ -292,6 +355,11 @@ abstract class PlayerEntityMixin extends LivingEntity implements PlayerClassAcce
         if (this.shieldIFrames > 0) {
             this.shieldIFrames--;
         }
+
+    }
+
+    @Inject(method = "tick", at = @At("TAIL"), cancellable = true)
+    public void TailTickInject(CallbackInfo ci) {
     }
 
     @Inject(method = "attack", at = @At("HEAD"), cancellable = true)
@@ -324,19 +392,19 @@ abstract class PlayerEntityMixin extends LivingEntity implements PlayerClassAcce
                             }
                             if (source.isIn(DamageTypeTags.IS_PROJECTILE)) {
                                 this.shieldTolerance -= ModConfigs.PROJECTILEHITPOINTS;
-                                this.shieldRecharge = 160;
+                                this.shieldRecharge = calcShieldRechargeTime();
                                 this.shieldIFrames = 4;
                             } else if (source.isOf(DamageTypes.FIREWORKS)) {
                                 this.shieldTolerance -= ModConfigs.FIREWORKHITPOINTS;
-                                this.shieldRecharge = 160;
+                                this.shieldRecharge = calcShieldRechargeTime();
                                 this.shieldIFrames = 4;
                             } else if (source.isIn(DamageTypeTags.IS_EXPLOSION) && source.isIndirect()) {
                                 this.shieldTolerance -= ModConfigs.BLOCKEXPLOSIONHITPOINTS;
-                                this.shieldRecharge = 160;
+                                this.shieldRecharge = calcShieldRechargeTime();
                                 this.shieldIFrames = 4;
                             } else if (source.isOf(DamageTypes.INDIRECT_MAGIC)) {
                                 this.shieldTolerance -= ModConfigs.INDIRECTMAGICHITPOINTS;
-                                this.shieldRecharge = 160;
+                                this.shieldRecharge = calcShieldRechargeTime();
                                 this.shieldIFrames = 4;
                             }
                             if (this.shieldTolerance < 0) {
