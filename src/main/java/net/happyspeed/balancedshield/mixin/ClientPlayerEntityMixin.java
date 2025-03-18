@@ -9,6 +9,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.item.ShieldItem;
 import net.minecraft.registry.tag.ItemTags;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
@@ -109,6 +110,23 @@ public abstract class ClientPlayerEntityMixin extends PlayerEntity implements Cl
     @ModifyExpressionValue(method = "canStartSprinting", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/network/ClientPlayerEntity;isUsingItem()Z"))
     private boolean noDisableSprinting(boolean original){
         return (!this.getActiveItem().isIn(ModTags.Items.SHIELDSPRINT)) && original;
+    }
+
+    @Unique
+    public Hand priorityShieldDetection() {
+        Hand shieldHand = Hand.OFF_HAND;
+        if ( (this.getStackInHand(this.getActiveHand()).isIn(ModTags.Items.SHIELD) || this.getStackInHand(this.getActiveHand()).getItem() instanceof ShieldItem)) {
+            shieldHand = getActiveHand();
+            return shieldHand;
+        }
+        else if ( ( !(this.getStackInHand(this.getActiveHand()).isIn(ModTags.Items.SHIELD)) && !(this.getStackInHand(this.getActiveHand()).getItem() instanceof ShieldItem)) && this.getOffHandStack().isIn(ModTags.Items.SHIELD)) {
+            shieldHand = Hand.OFF_HAND;
+            return shieldHand;
+        }
+        else if ( ( !(this.getStackInHand(this.getActiveHand()).isIn(ModTags.Items.SHIELD)) && !(this.getStackInHand(this.getActiveHand()).getItem() instanceof ShieldItem)) && this.getMainHandStack().isIn(ModTags.Items.SHIELD)) {
+            return shieldHand;
+        }
+        return shieldHand;
     }
 
     @Unique

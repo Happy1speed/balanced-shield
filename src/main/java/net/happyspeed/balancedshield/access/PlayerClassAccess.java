@@ -1,5 +1,7 @@
 package net.happyspeed.balancedshield.access;
 
+import net.minecraft.util.Hand;
+
 public interface PlayerClassAccess {
-        float balancedShield_1_20_1$accessPlayerPastCooldown();
+        float balancedShield$accessPlayerPastCooldown();
     }

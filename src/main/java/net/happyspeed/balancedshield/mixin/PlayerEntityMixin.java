@@ -28,6 +28,7 @@ import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -66,7 +67,6 @@ abstract class PlayerEntityMixin extends LivingEntity implements PlayerClassAcce
     @Unique
     int pastMaxShieldTolerance = shieldTolerance;
 
-
     @Shadow
     private final ItemCooldownManager itemCooldownManager;
 
@@ -84,6 +84,8 @@ abstract class PlayerEntityMixin extends LivingEntity implements PlayerClassAcce
     @Shadow
     public abstract float getAttackCooldownProgress(float baseTime);
 
+    @Shadow public abstract boolean shouldCancelInteraction();
+
     protected PlayerEntityMixin(EntityType<? extends LivingEntity> entityType, World world, ItemCooldownManager itemCooldownManager) {
         super(entityType, world);
         this.itemCooldownManager = itemCooldownManager;
@@ -91,7 +93,7 @@ abstract class PlayerEntityMixin extends LivingEntity implements PlayerClassAcce
     }
 
     @Override
-    public float balancedShield_1_20_1$accessPlayerPastCooldown() {
+    public float balancedShield$accessPlayerPastCooldown() {
         return this.playerPastAttackCooldown;
     }
 
@@ -99,7 +101,7 @@ abstract class PlayerEntityMixin extends LivingEntity implements PlayerClassAcce
     @Unique
     private void calcShieldLogic(LivingEntity attacker, Integer shieldhitstrong, Integer shieldhitweak) {
         if (attacker instanceof PlayerEntity player) {
-            if (((PlayerClassAccess) player).balancedShield_1_20_1$accessPlayerPastCooldown() > 0.75f) {
+            if (((PlayerClassAccess) player).balancedShield$accessPlayerPastCooldown() > 0.75f) {
                 this.shieldTolerance -= shieldhitstrong;
             }
             else {
@@ -114,14 +116,7 @@ abstract class PlayerEntityMixin extends LivingEntity implements PlayerClassAcce
     //Shield Tier Evaluation
     @Unique
     private int getMaxShieldTolerance() {
-        Hand holdingHand = this.getActiveHand();
-        ItemStack shieldStack = inventory.getMainHandStack();
-        if (holdingHand == Hand.MAIN_HAND) {
-            shieldStack = inventory.getMainHandStack();
-        }
-        if (holdingHand == Hand.OFF_HAND) {
-            shieldStack = inventory.getStack(PlayerInventory.OFF_HAND_SLOT);
-        }
+        ItemStack shieldStack = this.getStackInHand(priorityShieldDetection());
         //Tiers
         if (shieldStack.isIn(ModTags.Items.TIERONECHARGE)) {
             return 6;
@@ -159,14 +154,7 @@ abstract class PlayerEntityMixin extends LivingEntity implements PlayerClassAcce
 
     @Unique
     private int calcShieldRechargeTime() {
-        Hand holdingHand = this.getActiveHand();
-        ItemStack shieldStack = inventory.getMainHandStack();
-        if (holdingHand == Hand.MAIN_HAND) {
-            shieldStack = inventory.getMainHandStack();
-        }
-        if (holdingHand == Hand.OFF_HAND) {
-            shieldStack = inventory.getStack(PlayerInventory.OFF_HAND_SLOT);
-        }
+        ItemStack shieldStack = this.getStackInHand(priorityShieldDetection());
         //Tiers
         if (shieldStack.isIn(ModTags.Items.SHIELDRECHARGETIMEONE)) {
             return 500;
@@ -200,6 +188,23 @@ abstract class PlayerEntityMixin extends LivingEntity implements PlayerClassAcce
         }
         //Default to 200 if shield isn't in tags
         return 200;
+    }
+
+    @Unique
+    public Hand priorityShieldDetection() {
+        Hand shieldHand = Hand.OFF_HAND;
+        if ( (this.getStackInHand(this.getActiveHand()).isIn(ModTags.Items.SHIELD) || this.getStackInHand(this.getActiveHand()).getItem() instanceof ShieldItem)) {
+            shieldHand = getActiveHand();
+            return shieldHand;
+        }
+        else if ( ( !(this.getStackInHand(this.getActiveHand()).isIn(ModTags.Items.SHIELD)) && !(this.getStackInHand(this.getActiveHand()).getItem() instanceof ShieldItem)) && this.getOffHandStack().isIn(ModTags.Items.SHIELD)) {
+            shieldHand = Hand.OFF_HAND;
+            return shieldHand;
+        }
+        else if ( ( !(this.getStackInHand(this.getActiveHand()).isIn(ModTags.Items.SHIELD)) && !(this.getStackInHand(this.getActiveHand()).getItem() instanceof ShieldItem)) && this.getMainHandStack().isIn(ModTags.Items.SHIELD)) {
+            return shieldHand;
+        }
+        return shieldHand;
     }
 
     @Inject(method = "takeShieldHit", at = @At("HEAD"), cancellable = true)
@@ -265,6 +270,9 @@ abstract class PlayerEntityMixin extends LivingEntity implements PlayerClassAcce
             this.shieldTolerance = 0;
         }
         if (!this.getWorld().isClient()) {
+            if (this.shieldTolerance > getMaxShieldTolerance()) {
+                this.shieldTolerance = getMaxShieldTolerance();
+            }
             var player = ((PlayerEntity) ((Object) this));
             if (player instanceof ServerPlayerEntity serverPlayerEntity) {
                 S2CShieldToleranceSyncPacket.send(serverPlayerEntity, this.getId(), (float) shieldTolerance);
@@ -305,6 +313,9 @@ abstract class PlayerEntityMixin extends LivingEntity implements PlayerClassAcce
         }
     }
 
+
+
+
     //If Tolerance is under 1, Fix shield state.
     @Unique
     private void updateDisableShieldCheck() {
@@ -312,6 +323,9 @@ abstract class PlayerEntityMixin extends LivingEntity implements PlayerClassAcce
             this.disableShield(true);
             this.shieldTolerance = this.getMaxShieldTolerance();
             if (!this.getWorld().isClient()) {
+                if (this.shieldTolerance > getMaxShieldTolerance()) {
+                    this.shieldTolerance = getMaxShieldTolerance();
+                }
                 var player = ((PlayerEntity) ((Object) this));
                 if (player instanceof ServerPlayerEntity serverPlayerEntity) {
                     S2CShieldToleranceSyncPacket.send(serverPlayerEntity, this.getId(), (float) shieldTolerance);
@@ -326,6 +340,9 @@ abstract class PlayerEntityMixin extends LivingEntity implements PlayerClassAcce
         this.clearActiveItem();
         this.getWorld().sendEntityStatus(this, EntityStatuses.BREAK_SHIELD);
         if (!this.getWorld().isClient()) {
+            if (this.shieldTolerance > getMaxShieldTolerance()) {
+                this.shieldTolerance = getMaxShieldTolerance();
+            }
             var player = ((PlayerEntity) ((Object) this));
             if (player instanceof ServerPlayerEntity serverPlayerEntity) {
                 S2CShieldToleranceSyncPacket.send(serverPlayerEntity, this.getId(), (float) shieldTolerance);
@@ -342,6 +359,9 @@ abstract class PlayerEntityMixin extends LivingEntity implements PlayerClassAcce
         if (this.shieldRecharge < 1) {
             this.shieldTolerance = this.getMaxShieldTolerance();
             if (!this.getWorld().isClient()) {
+                if (this.shieldTolerance > getMaxShieldTolerance()) {
+                    this.shieldTolerance = getMaxShieldTolerance();
+                }
                 var player = ((PlayerEntity) ((Object) this));
                 if (player instanceof ServerPlayerEntity serverPlayerEntity) {
                     S2CShieldToleranceSyncPacket.send(serverPlayerEntity, this.getId(), (float) shieldTolerance);
@@ -414,6 +434,9 @@ abstract class PlayerEntityMixin extends LivingEntity implements PlayerClassAcce
                                 return true;
                             }
                             if (!this.getWorld().isClient()) {
+                                if (this.shieldTolerance > getMaxShieldTolerance()) {
+                                    this.shieldTolerance = getMaxShieldTolerance();
+                                }
                                 var player = ((PlayerEntity) ((Object) this));
                                 if (player instanceof ServerPlayerEntity serverPlayerEntity) {
                                     S2CShieldToleranceSyncPacket.send(serverPlayerEntity, this.getId(), (float) shieldTolerance);

@@ -14,7 +14,7 @@ public class ModConfigs {
     public static int DEFAULTENTITYHITPOINTS;
     public static boolean BLOCKPARRYENABLED;
     public static int BLOCKPARRYTICKWINDOW;
-    public static int R;
+    public static boolean CLIENTPULSEDISABLEDCOLOR;
     public static boolean CLIENTSHOWWORDINFO;
 
     public static void registerConfigs() {
@@ -34,6 +34,7 @@ public class ModConfigs {
         configs.addKeyValuePair(new Pair<>("block_parry_enabled", false));
         configs.addKeyValuePair(new Pair<>("block_parry_tick_window", 3));
         configs.addKeyValuePair(new Pair<>("client_show_word_info", true));
+        configs.addKeyValuePair(new Pair<>("client_pulse_disabled_color", true));
     }
 
     private static void assignConfigs() {
@@ -45,6 +46,7 @@ public class ModConfigs {
         BLOCKPARRYENABLED = CONFIG.getOrDefault("block_parry_enabled", false);
         BLOCKPARRYTICKWINDOW = CONFIG.getOrDefault("block_parry_tick_window", 3);
         CLIENTSHOWWORDINFO = CONFIG.getOrDefault("client_show_word_info", true);
+        CLIENTPULSEDISABLEDCOLOR = CONFIG.getOrDefault("client_pulse_disabled_color", true);
 
 
 
