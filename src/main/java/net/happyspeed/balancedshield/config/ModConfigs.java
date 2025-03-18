@@ -14,6 +14,10 @@ public class ModConfigs {
     public static int DEFAULTENTITYHITPOINTS;
     public static boolean BLOCKPARRYENABLED;
     public static int BLOCKPARRYTICKWINDOW;
+    public static boolean DEFAULTVALUESDATAPACKENABLED;
+    public static boolean BUMBLEZONEDATAPACKENABLED;
+    public static boolean GUARDINGDATAPACKENABLED;
+    public static boolean MODSHIELDTAGENABLED;
     public static boolean CLIENTPULSEDISABLEDCOLOR;
     public static boolean CLIENTSHOWWORDINFO;
 
@@ -33,6 +37,10 @@ public class ModConfigs {
         configs.addKeyValuePair(new Pair<>("indirect_magic_hit_points", 12));
         configs.addKeyValuePair(new Pair<>("block_parry_enabled", false));
         configs.addKeyValuePair(new Pair<>("block_parry_tick_window", 3));
+        configs.addKeyValuePair(new Pair<>("default_values_datapack_enabled", true));
+        configs.addKeyValuePair(new Pair<>("bumblezone_datapack_enabled", true));
+        configs.addKeyValuePair(new Pair<>("guarding_datapack_enabled", true));
+        configs.addKeyValuePair(new Pair<>("mod_shield_tag_required_to_act_as_shield", true));
         configs.addKeyValuePair(new Pair<>("client_show_word_info", true));
         configs.addKeyValuePair(new Pair<>("client_pulse_disabled_color", true));
     }
@@ -45,6 +53,10 @@ public class ModConfigs {
         DEFAULTENTITYHITPOINTS = CONFIG.getOrDefault("default_entity_hit_points", 4);
         BLOCKPARRYENABLED = CONFIG.getOrDefault("block_parry_enabled", false);
         BLOCKPARRYTICKWINDOW = CONFIG.getOrDefault("block_parry_tick_window", 3);
+        DEFAULTVALUESDATAPACKENABLED = CONFIG.getOrDefault("default_values_datapack_enabled", true);
+        BUMBLEZONEDATAPACKENABLED = CONFIG.getOrDefault("bumblezone_datapack_enabled", true);
+        GUARDINGDATAPACKENABLED = CONFIG.getOrDefault("guarding_datapack_enabled", true);
+        MODSHIELDTAGENABLED = CONFIG.getOrDefault("mod_shield_tag_required_to_act_as_shield", true);
         CLIENTSHOWWORDINFO = CONFIG.getOrDefault("client_show_word_info", true);
         CLIENTPULSEDISABLEDCOLOR = CONFIG.getOrDefault("client_pulse_disabled_color", true);
 

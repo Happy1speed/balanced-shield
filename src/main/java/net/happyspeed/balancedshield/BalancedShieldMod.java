@@ -43,14 +43,19 @@ public class BalancedShieldMod implements ModInitializer {
 	public void onInitialize() {
 		ModConfigs.registerConfigs();
 		Optional<ModContainer> modContainer = FabricLoader.getInstance().getModContainer(BalancedShieldMod.MOD_ID);
-		if (FabricLoader.getInstance().isModLoaded("guarding")) {
+		if (FabricLoader.getInstance().isModLoaded("guarding") && ModConfigs.GUARDINGDATAPACKENABLED) {
 			GuardingModLoaded = true;
 			ResourceManagerHelper.registerBuiltinResourcePack(new Identifier(BalancedShieldMod.MOD_ID, "balanced_shield_guarding_compat"), (ModContainer) modContainer.get(), Text.translatable("pack.balancedshieldguardingcompat"), ResourcePackActivationType.ALWAYS_ENABLED);
 		}
-		if (FabricLoader.getInstance().isModLoaded("the_bumblezone")) {
+		if (FabricLoader.getInstance().isModLoaded("the_bumblezone") && ModConfigs.BUMBLEZONEDATAPACKENABLED) {
 			BumblezoneModLoaded = true;
 			ResourceManagerHelper.registerBuiltinResourcePack(new Identifier(BalancedShieldMod.MOD_ID, "balanced_shield_bumblezone_compat"), (ModContainer) modContainer.get(), Text.translatable("pack.balancedshieldbumblezonecompat"), ResourcePackActivationType.ALWAYS_ENABLED);
 		}
+
+		if (ModConfigs.DEFAULTVALUESDATAPACKENABLED) {
+			ResourceManagerHelper.registerBuiltinResourcePack(new Identifier(BalancedShieldMod.MOD_ID, "balanced_shield_default_values"), (ModContainer) modContainer.get(), Text.translatable("pack.balancedshielddefaults"), ResourcePackActivationType.ALWAYS_ENABLED);
+		}
+
 		LOGGER.info("Balanced Shield Initialized");
 
 

@@ -210,9 +210,11 @@ abstract class PlayerEntityMixin extends LivingEntity implements PlayerClassAcce
     @Inject(method = "takeShieldHit", at = @At("HEAD"), cancellable = true)
     public void takeShieldHit(LivingEntity attacker, CallbackInfo ci) {
         super.takeShieldHit(attacker);
-        if (!(this.getActiveItem().isIn(ModTags.Items.SHIELD))) {
-            ci.cancel();
-            return;
+        if (ModConfigs.MODSHIELDTAGENABLED) {
+            if (!(this.getActiveItem().isIn(ModTags.Items.SHIELD))) {
+                ci.cancel();
+                return;
+            }
         }
         if (ModConfigs.BLOCKPARRYENABLED) {
             if (this.getActiveItem().getMaxUseTime() - this.itemUseTimeLeft <= ModConfigs.BLOCKPARRYTICKWINDOW) {
@@ -430,8 +432,10 @@ abstract class PlayerEntityMixin extends LivingEntity implements PlayerClassAcce
                             if (this.shieldTolerance < 0) {
                                 this.shieldTolerance = 0;
                             }
-                            if (!(this.getActiveItem().isIn(ModTags.Items.SHIELD))) {
-                                return true;
+                            if (ModConfigs.MODSHIELDTAGENABLED) {
+                                if (!(this.getActiveItem().isIn(ModTags.Items.SHIELD))) {
+                                    return true;
+                                }
                             }
                             if (!this.getWorld().isClient()) {
                                 if (this.shieldTolerance > getMaxShieldTolerance()) {
