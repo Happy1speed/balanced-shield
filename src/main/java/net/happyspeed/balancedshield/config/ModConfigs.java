@@ -20,6 +20,7 @@ public class ModConfigs {
     public static boolean MODSHIELDTAGENABLED;
     public static boolean CLIENTPULSEDISABLEDCOLOR;
     public static boolean CLIENTSHOWWORDINFO;
+    public static int CLIENTSHIELDINDICATOROFFSETY;
 
     public static void registerConfigs() {
         configs = new ModConfigProvider();
@@ -43,6 +44,7 @@ public class ModConfigs {
         configs.addKeyValuePair(new Pair<>("mod_shield_tag_required_to_act_as_shield", true));
         configs.addKeyValuePair(new Pair<>("client_show_word_info", true));
         configs.addKeyValuePair(new Pair<>("client_pulse_disabled_color", true));
+        configs.addKeyValuePair(new Pair<>("client_shield_indicator_offset_y", 0));
     }
 
     private static void assignConfigs() {
@@ -59,6 +61,7 @@ public class ModConfigs {
         MODSHIELDTAGENABLED = CONFIG.getOrDefault("mod_shield_tag_required_to_act_as_shield", true);
         CLIENTSHOWWORDINFO = CONFIG.getOrDefault("client_show_word_info", true);
         CLIENTPULSEDISABLEDCOLOR = CONFIG.getOrDefault("client_pulse_disabled_color", true);
+        CLIENTSHIELDINDICATOROFFSETY = CONFIG.getOrDefault("client_shield_indicator_offset_y", 0);
 
 
 
