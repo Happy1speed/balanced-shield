@@ -59,6 +59,6 @@ public class BalancedShieldMod implements ModInitializer {
 
 		LOGGER.info("Balanced Shield Initialized");
 
-		ShieldGUI.initGUI();
+
 	}
 }
