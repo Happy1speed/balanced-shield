@@ -39,7 +39,7 @@ public abstract class ClientPlayerEntityMixin extends PlayerEntity implements Cl
         this.clientShieldTolerance = clientShieldTolerance;
     }
 
-    @ModifyConstant(method = "tickMovement", constant = @Constant(floatValue = 0.2f, ordinal = 0))
+    @ModifyExpressionValue(method = "tickMovement", at = @At(value = "CONSTANT", args = "floatValue=0.2", ordinal = 0))
     private float shieldMovementStrafe(float constant) {
         ItemStack shield = this.getActiveItem();
         if (shield.isIn(ModTags.Items.SHIELDSTRAFEMOVEMENTONE)) {
@@ -73,7 +73,7 @@ public abstract class ClientPlayerEntityMixin extends PlayerEntity implements Cl
         return constant;
     }
 
-    @ModifyConstant(method = "tickMovement", constant = @Constant(floatValue = 0.2f, ordinal = 1))
+    @ModifyExpressionValue(method = "tickMovement", at = @At(value = "CONSTANT", args = "floatValue=0.2", ordinal = 1))
     private float shieldMovement(float constant) {
         ItemStack shield = this.getActiveItem();
         if (shield.isIn(ModTags.Items.SHIELDMOVEMENTONE)) {
